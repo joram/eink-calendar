@@ -5,7 +5,7 @@ import logging
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'e-Paper/RaspberryPi_JetsonNano/python/lib'))
 
-from waveshare_epd import epd7in5b_V3
+from waveshare_epd import epd7in5b_V2
 from PIL import Image, ImageDraw
 
 logging.basicConfig(
@@ -36,7 +36,7 @@ def render(epd):
 
 def main():
     log.info("Starting eink-calendar daemon")
-    epd = epd7in5b_V3.EPD()
+    epd = epd7in5b_V2.EPD()
     epd.init()
 
     while True:
