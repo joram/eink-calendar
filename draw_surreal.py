@@ -169,8 +169,8 @@ for deg in range(0, 360, 30):
         (sx + int((sr + 22) * math.cos(angle)), sy + int((sr + 22) * math.sin(angle))),
     ], fill=0, width=2)
 
-print("Displaying...")
+print("Displaying...", flush=True)
 epd.display(epd.getbuffer(img_black), epd.getbuffer(img_red))
 
-print("Done. Putting display to sleep.")
+print("Done. Putting display to sleep.", flush=True)
 epd.sleep()
