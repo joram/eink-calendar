@@ -1,16 +1,13 @@
-import sys
 import os
 import calendar
 import datetime
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'e-Paper/RaspberryPi_JetsonNano/python/lib'))
-
-from waveshare_epd import epd7in5b_V2
 from PIL import Image, ImageDraw, ImageFont
 import gcal
+import display
 
 # --- Display dimensions ---
-W, H = 800, 480
+W, H = display.W, display.H
 
 # --- Layout ---
 LEFT_W = 240          # left panel (month calendar) width
@@ -163,11 +160,6 @@ def main():
         print(f"Warning: could not fetch events: {e}", flush=True)
         events = {}
 
-    print("Initializing display...", flush=True)
-    epd = epd7in5b_V2.EPD()
-    epd.init()
-    epd.Clear()
-
     img_black = Image.new('1', (W, H), 255)
     img_red   = Image.new('1', (W, H), 255)
     b = ImageDraw.Draw(img_black)
@@ -176,10 +168,7 @@ def main():
     draw_month(b, r, today)
     draw_events(b, r, events, today)
 
-    print("Displaying...", flush=True)
-    epd.display(epd.getbuffer(img_black), epd.getbuffer(img_red))
-    print("Done. Putting display to sleep.", flush=True)
-    epd.sleep()
+    display.show(img_black, img_red)
 
 
 if __name__ == '__main__':

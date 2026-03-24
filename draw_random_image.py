@@ -1,15 +1,12 @@
-import sys
 import os
 import random
 import glob
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'e-Paper/RaspberryPi_JetsonNano/python/lib'))
-
-from waveshare_epd import epd7in5b_V2
 from PIL import Image
 import numpy as np
+import display
 
-W, H = 800, 480
+W, H = display.W, display.H
 IMAGES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'images')
 
 # Palette: index 0=white, 1=black, 2=red, rest=white (for quantize overflow)
@@ -42,16 +39,7 @@ def main():
 
     print('Converting to e-ink palette...', flush=True)
     img_black, img_red = to_eink_layers(img)
-
-    print('Initializing display...', flush=True)
-    epd = epd7in5b_V2.EPD()
-    epd.init()
-    epd.Clear()
-
-    print('Displaying...', flush=True)
-    epd.display(epd.getbuffer(img_black), epd.getbuffer(img_red))
-    print('Done. Putting display to sleep.', flush=True)
-    epd.sleep()
+    display.show(img_black, img_red)
 
 
 if __name__ == '__main__':

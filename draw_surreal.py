@@ -1,19 +1,8 @@
-import sys
-import os
 import math
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'e-Paper/RaspberryPi_JetsonNano/python/lib'))
-
-from waveshare_epd import epd7in5b_V2
 from PIL import Image, ImageDraw
+import display
 
-epd = epd7in5b_V2.EPD()
-
-print("Initializing display...")
-epd.init()
-epd.Clear()
-
-W, H = epd.width, epd.height  # 800 x 480
+W, H = display.W, display.H
 
 img_black = Image.new('1', (W, H), 255)
 img_red   = Image.new('1', (W, H), 255)
@@ -169,8 +158,4 @@ for deg in range(0, 360, 30):
         (sx + int((sr + 22) * math.cos(angle)), sy + int((sr + 22) * math.sin(angle))),
     ], fill=0, width=2)
 
-print("Displaying...", flush=True)
-epd.display(epd.getbuffer(img_black), epd.getbuffer(img_red))
-
-print("Done. Putting display to sleep.", flush=True)
-epd.sleep()
+display.show(img_black, img_red)

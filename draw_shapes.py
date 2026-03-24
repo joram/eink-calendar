@@ -1,18 +1,8 @@
-import sys
 import os
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'e-Paper/RaspberryPi_JetsonNano/python/lib'))
-
-from waveshare_epd import epd7in5b_V2
 from PIL import Image, ImageDraw
+import display
 
-epd = epd7in5b_V2.EPD()
-
-print("Initializing display...", flush=True)
-epd.init()
-epd.Clear()
-
-W, H = epd.width, epd.height  # 800 x 480
+W, H = display.W, display.H
 
 img_black = Image.new('1', (W, H), 255)
 img_red   = Image.new('1', (W, H), 255)
@@ -39,8 +29,4 @@ cx, cy = W // 2, H // 2
 b.line([(cx - 60, cy - 60), (cx + 60, cy + 60)], fill=0, width=3)
 b.line([(cx + 60, cy - 60), (cx - 60, cy + 60)], fill=0, width=3)
 
-print("Displaying...", flush=True)
-epd.display(epd.getbuffer(img_black), epd.getbuffer(img_red))
-
-print("Done. Putting display to sleep.", flush=True)
-epd.sleep()
+display.show(img_black, img_red)
