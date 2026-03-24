@@ -11,7 +11,7 @@ if ! grep -q "^dtparam=spi=on" /boot/config.txt 2>/dev/null && \
 fi
 
 # Install dependencies
-pip3 install pillow RPi.GPIO spidev
+sudo apt install -y python3-pil python3-rpi.gpio python3-spidev python3-numpy python3-googleapi python3-google-auth-oauthlib
 
 # Clone Waveshare library
 if [ ! -d "e-Paper" ]; then
