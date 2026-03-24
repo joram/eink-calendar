@@ -1,7 +1,7 @@
 import sys
 import os
-import urllib.request
-from io import BytesIO
+import random
+import glob
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'e-Paper/RaspberryPi_JetsonNano/python/lib'))
 
@@ -10,6 +10,7 @@ from PIL import Image
 import numpy as np
 
 W, H = 800, 480
+IMAGES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'images')
 
 # Palette: index 0=white, 1=black, 2=red, rest=white (for quantize overflow)
 _PALETTE_DATA = [255,255,255, 0,0,0, 255,0,0] + [255,255,255] * (256 - 3)
@@ -17,11 +18,13 @@ _PALETTE = Image.new('P', (1, 1))
 _PALETTE.putpalette(_PALETTE_DATA)
 
 
-def fetch_random_image():
-    url = f'https://picsum.photos/{W}/{H}'
-    print(f'Fetching {url} ...', flush=True)
-    with urllib.request.urlopen(url, timeout=15) as resp:
-        return Image.open(BytesIO(resp.read())).convert('RGB')
+def load_random_image():
+    paths = glob.glob(os.path.join(IMAGES_DIR, '*'))
+    if not paths:
+        raise FileNotFoundError(f'No images found in {IMAGES_DIR}')
+    path = random.choice(paths)
+    print(f'Loading {os.path.basename(path)} ...', flush=True)
+    return Image.open(path).convert('RGB').resize((W, H))
 
 
 def to_eink_layers(img):
@@ -35,7 +38,7 @@ def to_eink_layers(img):
 
 
 def main():
-    img = fetch_random_image()
+    img = load_random_image()
 
     print('Converting to e-ink palette...', flush=True)
     img_black, img_red = to_eink_layers(img)
