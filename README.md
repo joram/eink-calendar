@@ -1,75 +1,37 @@
 # eink-calendar
 
-Displays a calendar on a [Waveshare 7.5" e-Paper HAT (B) V3](https://www.waveshare.com/7.5inch-e-paper-hat-b.htm) connected to a Raspberry Pi. The display refreshes once an hour and runs as a systemd service on boot.
+Firmware for a [Waveshare 7.5" e-Paper (B) V2](https://www.waveshare.com/7.5inch-e-paper-hat-b.htm) (800×480, black / white / red) driven by the [E-Paper ESP32 Driver Board](https://www.waveshare.com/wiki/E-Paper_ESP32_Driver_Board).
 
-## Hardware
+Code lives under **`firmware/`** (Arduino / PlatformIO).
 
-- Raspberry Pi (any model with 40-pin GPIO)
-- Waveshare 7.5" e-Paper HAT (B) V3 — 800×480, black/white/red
-
-## Pi setup (first time)
-
-### 1. Flash and configure the Pi
-
-Flash Raspberry Pi OS Lite and during first boot (or via `raspi-config`):
-
-- Set hostname to `calendar`
-- Set username to `john`
-- Enable SSH
-- Connect to your network
-
-### 2. Enable SPI
-
-SSH into the Pi and run:
+## Build and flash
 
 ```bash
-sudo raspi-config
+cd firmware
+python3 -m venv .venv && .venv/bin/pip install platformio
 ```
 
-Navigate to **Interface Options → SPI → Enable**, then reboot.
-
-### 3. Install git
+From the repo root:
 
 ```bash
-sudo apt update && sudo apt install -y git
+make build    # compile
+make flash    # compile and upload (set `upload_port` in firmware/platformio.ini if needed)
 ```
 
-### 4. Deploy from your dev machine
+Override the PlatformIO binary: `make flash PIO=pio`.
 
-Back on your dev machine, from this repo:
+### WiFi and time
 
-```bash
-make install
-```
+Copy `firmware/src/wifi_secrets.example.h` to `wifi_secrets.h` and set SSID, password, and `TZ_POSIX` (needed for correct local dates and API time windows).
 
-This will:
-- Clone the repo to `~/eink-calendar` on the Pi
-- Install Python dependencies (`pillow`, `RPi.GPIO`, `spidev`)
-- Clone the Waveshare e-Paper driver library
-- Install and enable the `eink-calendar` systemd service
+### Google Calendar (e.g. john@oram.ca)
 
-The display will start updating immediately and will restart automatically on boot.
+The firmware lists every calendar returned by the Calendar API (`calendarList`, reader access), then loads the next **three local days** of events from each.
 
-## Ongoing deployment
+1. In [Google Cloud Console](https://console.cloud.google.com/), enable **Google Calendar API** and create an **OAuth client ID** (Desktop app). Note the client ID and secret.
+2. Add the redirect URI `http://127.0.0.1:8085/` (or `http://127.0.0.1:<port>/` if you use `--port`) under that client’s authorized redirect URIs.
+3. From the repo root, run `make oauth-setup` (or `python3 tools/google_oauth_setup.py --client-id '…' --client-secret '…' -o firmware/src/google_secrets.h`). The tool prints the consent URL, opens a browser, listens on localhost, and writes `firmware/src/google_secrets.h` with the refresh token. To reuse saved id/secret, omit those flags if the header already exists.
 
-After pushing changes to `main`, deploy to the Pi with:
+Alternatively, copy `firmware/src/google_secrets.example.h` to `google_secrets.h` and paste credentials and a refresh token manually (e.g. from OAuth 2.0 Playground).
 
-```bash
-make update
-```
-
-This SSHes into the Pi, pulls the latest code, and restarts the service.
-
-## Checking status on the Pi
-
-```bash
-# View service status
-sudo systemctl status eink-calendar
-
-# Follow live logs
-journalctl -u eink-calendar -f
-```
-
-## Wiring
-
-The HAT connects directly to the Pi's 40-pin GPIO header — no wiring needed if using the HAT form factor.
+HTTPS uses the ESP32 TLS stack (`WiFiClientSecure`); for stricter validation you can switch from the current `setInsecure()` usage to a pinned CA bundle in code.
